@@ -1,15 +1,11 @@
 # TensorFlow.js Example: Training MNIST
 
-This example shows you how to train MNIST (using the layers API).
-
-You can check out the tutorial that accompanies this example [here](https://js.tensorflow.org/tutorials/mnist.html).
+This example shows you how to train MNIST.
 
 This model will compute accuracy over 1000 random test set examples every 5
 steps, plotting loss and accuracy as the model is training. Training time can
 be reduced by computing accuracy over fewer examples less often.
 
-Note: currently the entire dataset of MNIST images is stored in a PNG image we have
-sprited, and the code in `data.js` is responsible for converting it into
-`Tensor`s. This will become much simpler in the near future.
+This model can be trained for two types of dataset: the original MNIST and [Fashion-MNIST](https://github.com/zalandoresearch/fashion-mnist).
 
-[See this example live!](https://storage.googleapis.com/tfjs-examples/mnist/dist/index.html)
+This model is adapted from [cmash's work](https://github.com/cmasch/zalando-fashion-mnist) and achieved similar results training in the browser.
