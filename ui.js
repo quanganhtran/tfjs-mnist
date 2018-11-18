@@ -141,8 +141,8 @@ export function draw(image, canvas) {
   ctx.putImageData(imageData, 0, 0);
 }
 
-export function getModelTypeId() {
-  return document.getElementById('model-type').value;
+export function getDataTypeId() {
+  return document.getElementById('data-type').value;
 }
 
 export function getTrainEpochs() {
@@ -151,11 +151,11 @@ export function getTrainEpochs() {
 
 export function setTrainButtonCallback(callback) {
   const trainButton = document.getElementById('train');
-  const modelType = document.getElementById('model-type');
+  const dataType = document.getElementById('data-type');
   const lastTrained = document.getElementById('last-trained-model');
   trainButton.addEventListener('click', () => {
     trainButton.setAttribute('disabled', true);
-    modelType.setAttribute('disabled', true);
+    dataType.setAttribute('disabled', true);
     lastTrained.setAttribute('disabled', true);
     callback();
   });
@@ -163,11 +163,11 @@ export function setTrainButtonCallback(callback) {
 
 export function setLastTrainedButtonCallback(callback) {
   const trainButton = document.getElementById('train');
-  const modelType = document.getElementById('model-type');
+  const dataType = document.getElementById('data-type');
   const lastTrained = document.getElementById('last-trained-model');
   lastTrained.addEventListener('click', () => {
     trainButton.setAttribute('disabled', true);
-    modelType.setAttribute('disabled', true);
+    dataType.setAttribute('disabled', true);
     lastTrained.setAttribute('disabled', true);
     callback();
   });

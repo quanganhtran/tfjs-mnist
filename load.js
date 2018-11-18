@@ -19,7 +19,7 @@ import * as tf from '@tensorflow/tfjs';
 import assert from 'assert';
 
 // MNIST data constants:
-const BASE_URL = 'http://localhost:8081/fashion/';
+const BASE_URL = 'http://localhost:8081/';
 const TRAIN_IMAGES_FILE = 'train-images-idx3-ubyte';
 const TRAIN_LABELS_FILE = 'train-labels-idx1-ubyte';
 const TEST_IMAGES_FILE = 't10k-images-idx3-ubyte';
@@ -123,10 +123,12 @@ export class MnistDataset {
     }
 
     /** Loads training and test data. */
-    async loadData() {
+    async loadData(dataType) {
         this.dataset = await Promise.all([
-            loadImages(TRAIN_IMAGES_FILE), loadLabels(TRAIN_LABELS_FILE),
-            loadImages(TEST_IMAGES_FILE), loadLabels(TEST_LABELS_FILE)
+            loadImages(`${dataType}/${TRAIN_IMAGES_FILE}`),
+            loadLabels(`${dataType}/${TRAIN_LABELS_FILE}`),
+            loadImages(`${dataType}/${TEST_IMAGES_FILE}`),
+            loadLabels(`${dataType}/${TEST_LABELS_FILE}`)
         ]);
         this.trainSize = this.dataset[0].length;
         this.testSize = this.dataset[2].length;

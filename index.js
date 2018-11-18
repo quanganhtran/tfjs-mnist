@@ -16,13 +16,11 @@
  */
 
 import * as tf from '@tensorflow/tfjs';
-
 // This is a helper class for loading and managing MNIST data specifically.
 // It is a useful example of how you could create your own data manager class
 // for arbitrary data though. It's worth a look :)
 // import {IMAGE_H, IMAGE_W, MnistData} from './data';
 import {IMAGE_HEIGHT as IMAGE_H, IMAGE_WIDTH as IMAGE_W, MnistDataset} from './load';
-
 // This is a helper class for drawing loss graphs and MNIST images to the
 // window. For the purposes of understanding the machine learning bits, you can
 // largely ignore it
@@ -39,39 +37,62 @@ function createConvModel() {
   // the input to the next layer.
   const model = tf.sequential();
 
-  // The first layer of the convolutional neural network plays a dual role:
-  // it is both the input layer of the neural network and a layer that performs
-  // the first convolution operation on the input. It receives the 28x28 pixels
-  // black and white images. This input layer uses 16 filters with a kernel size
-  // of 5 pixels each. It uses a simple RELU activation function which pretty
-  // much just looks like this: __/
-  model.add(tf.layers.conv2d({
-    inputShape: [IMAGE_H, IMAGE_W, 1],
-    kernelSize: 3,
-    filters: 16,
-    activation: 'relu'
+  model.add(tf.layers.inputLayer({
+      inputShape: [IMAGE_H, IMAGE_W, 1],
   }));
 
-  // After the first layer we include a MaxPooling layer. This acts as a sort of
-  // downsampling using max values in a region instead of averaging.
-  // https://www.quora.com/What-is-max-pooling-in-convolutional-neural-networks
-  model.add(tf.layers.maxPooling2d({poolSize: 2, strides: 2}));
+  // Normalization
+  model.add(tf.layers.batchNormalization());
 
-  // Our third layer is another convolution, this time with 32 filters.
-  model.add(tf.layers.conv2d({kernelSize: 3, filters: 32, activation: 'relu'}));
+  // Conv + Maxpooling
+  model.add(tf.layers.conv2d({
+      filters: 64,
+      kernelSize: [4, 4],
+      padding: "same",
+      activation: "relu"
+  }));
+  model.add(tf.layers.maxPool2d({
+      poolSize: [2, 2]
+  }));
 
-  // Max pooling again.
-  model.add(tf.layers.maxPooling2d({poolSize: 2, strides: 2}));
+  // Dropout
+  model.add(tf.layers.dropout({
+      rate: 0.1
+  }));
 
-  // Add another conv2d layer.
-  model.add(tf.layers.conv2d({kernelSize: 3, filters: 32, activation: 'relu'}));
+  // Conv + Maxpooling
+  model.add(tf.layers.conv2d({
+      filters: 64,
+      kernelSize: [4, 4],
+      activation: "relu"
+  }));
+  model.add(tf.layers.maxPool2d({
+      poolSize: [2, 2]
+  }));
 
-  // Now we flatten the output from the 2D filters into a 1D vector to prepare
-  // it for input into our last layer. This is common practice when feeding
-  // higher dimensional data to a final classification output layer.
+  // Dropout
+  model.add(tf.layers.dropout({ rate: 0.3 }));
+
+  // Converting 3D feature to 1D feature Vector
   model.add(tf.layers.flatten({}));
 
-  model.add(tf.layers.dense({units: 64, activation: 'relu'}));
+  // Fully Connected Layer
+  model.add(tf.layers.dense({
+      units: 256,
+      activation: "relu"
+  }));
+
+  // Dropout
+  model.add(tf.layers.dropout({ rate: 0.5 }));
+
+  // Fully Connected Layer
+  model.add(tf.layers.dense({
+      units: 64,
+      activation: "relu"
+  }));
+
+  // Normalization
+  model.add(tf.layers.batchNormalization());
 
   // Our last layer is a dense layer which has 10 output units, one for each
   // output class (i.e. 0, 1, 2, 3, 4, 5, 6, 7, 8, 9). Here the classes actually
@@ -82,26 +103,6 @@ function createConvModel() {
   // values sum to 1.
   model.add(tf.layers.dense({units: 10, activation: 'softmax'}));
 
-  return model;
-}
-
-/**
- * Creates a model consisting of only flatten, dense and dropout layers.
- *
- * The model create here has approximately the same number of parameters
- * (~31k) as the convnet created by `createConvModel()`, but is
- * expected to show a significantly worse accuracy after training, due to the
- * fact that it doesn't utilize the spatial information as the convnet does.
- *
- * This is for comparison with the convolutional network above.
- *
- * @returns {tf.Model} An instance of tf.Model.
- */
-function createDenseModel() {
-  const model = tf.sequential();
-  model.add(tf.layers.flatten({inputShape: [IMAGE_H, IMAGE_W, 1]}));
-  model.add(tf.layers.dense({units: 42, activation: 'relu'}));
-  model.add(tf.layers.dense({units: 10, activation: 'softmax'}));
   return model;
 }
 
@@ -129,11 +130,10 @@ async function train(model) {
   // values.
   const LEARNING_RATE = 0.01;
 
-  // We are using rmsprop as our optimizer.
   // An optimizer is an iterative method for minimizing an loss function.
   // It tries to find the minimum of our loss function with respect to the
   // model's weight parameters.
-  const optimizer = 'rmsprop';
+  const optimizer = 'adam';
 
   // We compile our model by specifying an optimizer, a loss function, and a
   // list of metrics that we will use for model evaluation. Here we're using a
@@ -246,23 +246,10 @@ async function showPredictions(model) {
   });
 }
 
-function createModel() {
-  let model;
-  const modelType = ui.getModelTypeId();
-  if (modelType === 'ConvNet') {
-    model = createConvModel();
-  } else if (modelType === 'DenseNet') {
-    model = createDenseModel();
-  } else {
-    throw new Error(`Invalid model type: ${modelType}`);
-  }
-  return model;
-}
-
 let data;
 async function load() {
   data = new MnistDataset();
-  await data.loadData();
+  await data.loadData(ui.getDataTypeId());
 }
 
 // This is our main function. It loads the MNIST data, trains the model, and
@@ -272,7 +259,7 @@ ui.setTrainButtonCallback(async () => {
   await load();
 
   ui.logStatus('Creating model...');
-  const model = createModel();
+  const model = createConvModel();
   model.summary();
 
   ui.logStatus('Starting model training...');
