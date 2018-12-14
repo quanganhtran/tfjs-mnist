@@ -17,13 +17,9 @@
 
 import * as tf from '@tensorflow/tfjs';
 import assert from 'assert';
+import pako from 'pako';
 
 // MNIST data constants:
-const BASE_URL = 'http://localhost:8081/';
-const TRAIN_IMAGES_FILE = 'train-images-idx3-ubyte';
-const TRAIN_LABELS_FILE = 'train-labels-idx1-ubyte';
-const TEST_IMAGES_FILE = 't10k-images-idx3-ubyte';
-const TEST_LABELS_FILE = 't10k-labels-idx1-ubyte';
 const IMAGE_HEADER_MAGIC_NUM = 2051;
 const IMAGE_HEADER_BYTES = 16;
 export const IMAGE_HEIGHT = 28;
@@ -34,20 +30,31 @@ const LABEL_HEADER_BYTES = 8;
 const LABEL_RECORD_BYTE = 1;
 const LABEL_FLAT_SIZE = 10;
 
+const digitsTrainImagesUrl = require('./data/digits/train-images-idx3-ubyte.gz');
+const digitsTrainLabelsUrl = require('./data/digits/train-labels-idx1-ubyte.gz');
+const digitsTestImagesUrl = require('./data/digits/t10k-images-idx3-ubyte.gz');
+const digitsTestLabelsUrl = require('./data/digits/t10k-labels-idx1-ubyte.gz');
+const fashionTrainImagesUrl = require('./data/fashion/train-images-idx3-ubyte.gz');
+const fashionTrainLabelsUrl = require('./data/fashion/train-labels-idx1-ubyte.gz');
+const fashionTestImagesUrl = require('./data/fashion/t10k-images-idx3-ubyte.gz');
+const fashionTestLabelsUrl = require('./data/fashion/t10k-labels-idx1-ubyte.gz');
+
 const cache = {};
 
 // Downloads a test file only once and returns the buffer for the file.
 async function fetchOnceAndSaveToDiskWithBuffer(filename) {
 
-    const url = `${BASE_URL}${filename}`;
+    const url = `${filename}`;
     if (cache[filename]) {
         return cache[filename];
     }
     console.log(`  * Downloading from: ${url}`);
-    return fetch(url).then((response) => {
-        cache[filename] = response.arrayBuffer();
-        return cache[filename];
-    });
+    return fetch(url)
+        .then(res => res.arrayBuffer())
+        .then((zipped) => {
+            cache[filename] = pako.inflate(zipped).buffer;
+            return cache[filename];
+        });
 }
 
 function loadHeaderValues(buffer, headerLength) {
@@ -124,12 +131,21 @@ export class MnistDataset {
 
     /** Loads training and test data. */
     async loadData(dataType) {
-        this.dataset = await Promise.all([
-            loadImages(`${dataType}/${TRAIN_IMAGES_FILE}`),
-            loadLabels(`${dataType}/${TRAIN_LABELS_FILE}`),
-            loadImages(`${dataType}/${TEST_IMAGES_FILE}`),
-            loadLabels(`${dataType}/${TEST_LABELS_FILE}`)
-        ]);
+        if (dataType === 'digits') {
+            this.dataset = await Promise.all([
+                loadImages(digitsTrainImagesUrl),
+                loadLabels(digitsTrainLabelsUrl),
+                loadImages(digitsTestImagesUrl),
+                loadLabels(digitsTestLabelsUrl)
+            ]);
+        } else {
+            this.dataset = await Promise.all([
+                loadImages(fashionTrainImagesUrl),
+                loadLabels(fashionTrainLabelsUrl),
+                loadImages(fashionTestImagesUrl),
+                loadLabels(fashionTestLabelsUrl)
+            ]);
+        }
         this.trainSize = this.dataset[0].length;
         this.testSize = this.dataset[2].length;
     }

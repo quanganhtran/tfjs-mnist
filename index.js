@@ -15,6 +15,9 @@
  * =============================================================================
  */
 
+import dotenv from 'dotenv';
+dotenv.config();
+
 import * as tf from '@tensorflow/tfjs';
 // This is a helper class for loading and managing MNIST data specifically.
 // It is a useful example of how you could create your own data manager class

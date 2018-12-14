@@ -1,6 +1,5 @@
 .DS_Store
 .cache/
 .idea/
-data/
 dist/
 node_modules/
