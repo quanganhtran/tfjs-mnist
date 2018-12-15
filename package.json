@@ -15,7 +15,7 @@
   },
   "scripts": {
     "watch": "cross-env NODE_ENV=development parcel index.html --no-hmr --open",
-    "build": "cross-env NODE_ENV=production parcel build index.html --no-minify --public-url ./ -d docs",
+    "build": "cross-env NODE_ENV=production parcel build index.html --no-minify --no-source-maps --no-content-hash --public-url ./ -d docs",
     "data": "http-server --gzip --cors -p 8081 data",
     "link-local": "yalc link",
     "postinstall": "npm update --save @tensorflow/tfjs"

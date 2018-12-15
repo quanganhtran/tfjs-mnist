@@ -213,7 +213,7 @@ async function train(model) {
 /**
  * Show predictions on a number of test examples.
  *
- * @param {tf.Model} model The model to be used for making the predictions.
+ * @param {Model} model The model to be used for making the predictions.
  */
 async function showPredictions(model) {
   const testExamples = 100;
@@ -266,18 +266,33 @@ ui.setTrainButtonCallback(async () => {
 
   showPredictions(model);
 
-  model.save('indexeddb://last-trained-model');
+  model.save(`indexeddb://last-trained-${ui.getDataTypeId()}`);
 });
 
-ui.setLastTrainedButtonCallback(async () => {
+async function showTrainedModel(modelPath) {
   try {
     ui.logStatus('Loading MNIST data and last trained model...');
     const [model] = await Promise.all([
-      tf.loadModel('indexeddb://last-trained-model'),
+      tf.loadModel(modelPath),
       load()
     ]);
-    showPredictions(model);
+    return showPredictions(model);
   } catch (e) {
     alert(e);
+  }
+}
+
+ui.setLastTrainedButtonCallback(async () =>
+  showTrainedModel(`indexeddb://last-trained-${ui.getDataTypeId()}`)
+);
+
+const preTrainedFashionUrl = require('./pre-trained/fashion.json.pre');
+const preTrainedDigitsUrl = require('./pre-trained/digits.json.pre');
+
+ui.setPreTrainedButtonCallback(async () => {
+  if (ui.getDataTypeId() === 'fashion') {
+    return showTrainedModel(preTrainedFashionUrl);
+  } else {
+    return showTrainedModel(preTrainedDigitsUrl);
   }
 });

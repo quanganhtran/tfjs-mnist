@@ -149,26 +149,33 @@ export function getTrainEpochs() {
   return Number.parseInt(document.getElementById('train-epochs').value);
 }
 
+const elements = [
+  document.getElementById('train'),
+  document.getElementById('data-type'),
+  document.getElementById('last-trained-model'),
+  document.getElementById('pre-trained-model'),
+];
+
 export function setTrainButtonCallback(callback) {
   const trainButton = document.getElementById('train');
-  const dataType = document.getElementById('data-type');
-  const lastTrained = document.getElementById('last-trained-model');
   trainButton.addEventListener('click', () => {
-    trainButton.setAttribute('disabled', true);
-    dataType.setAttribute('disabled', true);
-    lastTrained.setAttribute('disabled', true);
+    elements.forEach(el => el.setAttribute('disabled', true));
     callback();
   });
 }
 
 export function setLastTrainedButtonCallback(callback) {
-  const trainButton = document.getElementById('train');
-  const dataType = document.getElementById('data-type');
   const lastTrained = document.getElementById('last-trained-model');
   lastTrained.addEventListener('click', () => {
-    trainButton.setAttribute('disabled', true);
-    dataType.setAttribute('disabled', true);
-    lastTrained.setAttribute('disabled', true);
+    elements.forEach(el => el.setAttribute('disabled', true));
+    callback();
+  });
+}
+
+export function setPreTrainedButtonCallback(callback) {
+  const preTrained = document.getElementById('pre-trained-model');
+  preTrained.addEventListener('click', () => {
+    elements.forEach(el => el.setAttribute('disabled', true));
     callback();
   });
 }
